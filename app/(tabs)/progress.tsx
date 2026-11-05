@@ -13,10 +13,9 @@ import {
   colors,
 } from "../../src/components/ui";
 import { useStore } from "../../src/state/store";
-import { subjects } from "../../src/data/seed";
 import { coverage, streak, activity } from "../../src/data/metrics";
 export default function Progress() {
-  const { chapters, sessions } = useStore();
+  const { chapters, sessions, subjects } = useStore();
   return (
     <Page>
       <View style={s.row}>
@@ -34,7 +33,7 @@ export default function Progress() {
             color: colors.text,
           },
           {
-            n: `${Math.round(subjects.reduce((sum, subject) => sum + coverage(chapters, subject.id), 0) / subjects.length)}%`,
+            n: `${Math.round(subjects.reduce((sum, subject) => sum + coverage(chapters, subject.id), 0) / (subjects.length || 1))}%`,
             label: "Avg Progress",
             color: colors.purple,
           },

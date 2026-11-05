@@ -9,10 +9,9 @@ import {
   s,
 } from "../../src/components/ui";
 import { useStore } from "../../src/state/store";
-import { subjects } from "../../src/data/seed";
 import { router } from "expo-router";
 export default function Plan() {
-  const { chapters, update } = useStore();
+  const { chapters, update, subjects } = useStore();
   const planned = chapters.filter((c) => c.planned);
   return (
     <Page>

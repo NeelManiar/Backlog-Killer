@@ -1,3 +1,4 @@
+import { router } from "expo-router";
 import { useStore } from "../../src/state/store";
 import {
   Page,
@@ -13,8 +14,22 @@ export default function Settings() {
     <Page>
       <Title>Settings</Title>
       <Card>
-        <Heading>Aryan’s Study Space</Heading>
-        <Label>Class 12 · PCM · Demonstration profile</Label>
+        <Heading>Your Study Space</Heading>
+        <Label>Choose the subjects and goals that fit your studies.</Label>
+        <Button
+          title="Your account and sync"
+          onPress={() => router.push("/account")}
+        />
+        <Button
+          secondary
+          title="Edit academic profile"
+          onPress={() => router.push("/onboarding")}
+        />
+        <Button
+          secondary
+          title="Privacy information"
+          onPress={() => router.push("/privacy")}
+        />
       </Card>
       <Card>
         <Heading>Offline by design</Heading>
@@ -51,7 +66,7 @@ export default function Settings() {
       </Card>
       <Card>
         <Heading>About Backlog Killer</Heading>
-        <Label>BK v0.2 · Motivating Study Experience</Label>
+        <Label>BK v0.3 · Personalized study</Label>
         <Label>Built for small steps and consistent progress.</Label>
       </Card>
     </Page>

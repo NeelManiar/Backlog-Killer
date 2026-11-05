@@ -11,8 +11,12 @@ export type Chapter = {
   minutes: number;
   planned: boolean;
   priority?: number;
+  origin?: 'custom' | 'verified' | 'legacy';
+  curriculumIds?: string[];
+  customSection?: string;
 };
 export type Session = {
+  chapterId?: string;
   id: string;
   subject: string;
   title: string;

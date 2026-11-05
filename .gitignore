@@ -5,3 +5,5 @@ dist/
 .env*
 android/
 ios/
+supabase/.temp/
+supabase/.branches/

@@ -12,11 +12,10 @@ import {
   s,
 } from "../../src/components/ui";
 import { useStore } from "../../src/state/store";
-import { subjects } from "../../src/data/seed";
 export default function Subject() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { chapters, update, subjects } = useStore();
   const subject = subjects.find((x) => x.id === id);
-  const { chapters, update } = useStore();
   if (!subject)
     return (
       <Page>
@@ -35,8 +34,7 @@ export default function Subject() {
         <Title>{subject.name}</Title>
       </View>
       <Label>
-        {subject.days} days to your target · Tap a chapter’s status to update
-        it.
+        Tap a chapter’s status to update your progress.
       </Label>
       <Boss subject={subject.id} />
       {chapters
@@ -45,7 +43,12 @@ export default function Subject() {
           <Card key={c.id}>
             <Heading>{c.title}</Heading>
             <Label color={subject.color}>
-              {c.status.toUpperCase()} · {c.minutes} min
+              {c.status.toUpperCase()} · {c.minutes} min ·{" "}
+              {c.origin === "custom"
+                ? "Custom"
+                : c.origin === "verified"
+                  ? "Verified curriculum"
+                  : "Saved / unverified"}
             </Label>
             <View style={{ gap: 8 }}>
               <Button
