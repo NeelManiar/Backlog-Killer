@@ -3,13 +3,17 @@
     "name": "Backlog Killer",
     "slug": "backlog-killer",
     "scheme": "bk",
-    "version": "1.0.0",
+    "version": "0.2.0",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
     "android": {
       "package": "com.backlogkiller.app"
     },
-    "plugins": ["expo-router", "expo-sqlite", "expo-status-bar"],
+    "plugins": [
+      "expo-router",
+      "expo-sqlite",
+      "expo-status-bar"
+    ],
     "web": {
       "bundler": "metro"
     }

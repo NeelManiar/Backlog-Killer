@@ -1,211 +1,203 @@
-import { useEffect, useState } from "react";
-import {
-  AppState,
-  Pressable,
-  Text,
-  View,
-  useWindowDimensions,
-} from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
+import { useEffect, useRef, useState } from "react";
+import { AppState, Text, TextInput, View } from "react-native";
 import {
   Page,
   Title,
   Heading,
   Card,
   Label,
-  IconButton,
+  Button,
   s,
   colors,
 } from "../../src/components/ui";
+import { Celebration } from "../../src/components/motivation";
 import { useStore } from "../../src/state/store";
-import { subjects } from "../../src/data/seed";
+import { remainingSeconds } from "../../src/data/motivation";
 export default function Timer() {
-  const { chapters, sessions, log } = useStore();
+  const { chapters, sessions, motivation, focusAction } = useStore();
+  const focus = motivation.focus;
+  const [chapterId, setChapterId] = useState(
+    chapters.find((c) => c.status !== "done")?.id ?? chapters[0]?.id ?? "",
+  );
+  const [minutes, setMinutes] = useState("25");
   const [mode, setMode] = useState<"work" | "break">("work");
-  const [remaining, setRemaining] = useState(1500);
-  const [end, setEnd] = useState<number | null>(null);
-  const [subject, setSubject] = useState("physics");
+  const [now, setNow] = useState(Date.now());
   const [notice, setNotice] = useState("");
-  const size = Math.min(useWindowDimensions().width - 64, 290);
+  const [celebrated, setCelebrated] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const finishing = useRef(false);
   useEffect(() => {
-    if (!end) return;
-    const tick = () =>
-      setRemaining(Math.max(0, Math.ceil((end - Date.now()) / 1000)));
-    tick();
-    const id = setInterval(tick, 250);
-    const listener = AppState.addEventListener("change", tick);
+    const tick = () => setNow(Date.now());
+    const timer = setInterval(tick, 500);
+    const sub = AppState.addEventListener("change", tick);
     return () => {
-      clearInterval(id);
-      listener.remove();
+      clearInterval(timer);
+      sub.remove();
     };
-  }, [end]);
+  }, []);
+  const remaining = focus
+    ? remainingSeconds(focus, now)
+    : Math.max(0, (+minutes || 0) * 60);
   useEffect(() => {
-    if (end && remaining === 0) {
-      setEnd(null);
-      if (mode === "work") {
-        const chapter = chapters.find(
-          (c) => c.subject === subject && c.status === "active",
+    if (!focus || remaining > 0 || finishing.current) return;
+    finishing.current = true;
+    void focusAction("finish")
+      .then(() => {
+        setNotice(
+          focus.mode === "work"
+            ? "Focus session saved. Mark your chapter complete only when the work is done."
+            : "Break complete.",
         );
-        void log({
-          id: `session-${Date.now()}`,
-          subject,
-          title: chapter?.title ?? "Focused study",
-          minutes: 25,
-          finishedAt: new Date().toISOString(),
-        })
-          .then(() => setNotice("Great work! Your 25-minute session is saved."))
-          .catch(() =>
-            setNotice("Session could not be saved. Please try again."),
-          );
-      } else setNotice("Break complete. Ready for another chapter?");
-    }
-  }, [remaining, end, mode, subject, chapters, log]);
-  function reset(next = mode) {
-    setEnd(null);
-    setRemaining(next === "work" ? 1500 : 300);
-    setMode(next);
-    setNotice("");
-  }
+        setCelebrated(true);
+      })
+      .catch(() => setNotice("Could not save. Tap Finish to retry."))
+      .finally(() => {
+        finishing.current = false;
+      });
+  }, [focus?.id, remaining]);
+  const act = (action: "start" | "pause" | "resume" | "end" | "finish") => {
+    setBusy(true);
+    setCelebrated(false);
+    void focusAction(action, chapterId, +minutes, mode)
+      .then(() => {
+        setNow(Date.now());
+        setNotice(
+          action === "end"
+            ? "Session ended. Elapsed study time saved; chapter status unchanged."
+            : "",
+        );
+      })
+      .catch(() => setNotice("Could not save. Please retry."))
+      .finally(() => setBusy(false));
+  };
   return (
     <Page>
       <Title>Focus Timer</Title>
-      <View style={s.row}>
-        {(["work", "break"] as const).map((m) => (
-          <Pressable
-            key={m}
-            accessibilityRole="button"
-            accessibilityState={{ selected: mode === m }}
-            onPress={() => reset(m)}
-            style={[
-              s.chip,
-              {
-                flex: 1,
-                alignItems: "center",
-                borderRadius: 14,
-                borderColor: mode === m ? colors.purple : colors.border,
-                backgroundColor: mode === m ? "#1a1030" : colors.card,
-              },
-            ]}
-          >
-            <Text
-              style={{
-                color: mode === m ? "#a363ff" : colors.muted,
-                fontWeight: "700",
-                fontSize: 16,
+      <Label>
+        Select a chapter. Timers survive backgrounding and restarts; chapters
+        are completed separately.
+      </Label>
+      {!focus && (
+        <>
+          <View style={s.row}>
+            <Button
+              title="Work"
+              secondary={mode !== "work"}
+              onPress={() => {
+                setMode("work");
+                setMinutes("25");
               }}
-            >
-              {m === "work" ? "Work 25m" : "Break 5m"}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
-      <LinearGradient
-        colors={["#211337", "#1b1b30"]}
-        style={{
-          alignSelf: "center",
-          width: size,
-          height: size,
-          borderRadius: size / 2,
-          borderWidth: 3,
-          borderColor: "#301a50",
-          alignItems: "center",
-          justifyContent: "center",
-          marginVertical: 8,
-        }}
-      >
+            />
+            <Button
+              title="Break"
+              secondary={mode !== "break"}
+              onPress={() => {
+                setMode("break");
+                setMinutes("5");
+              }}
+            />
+          </View>
+          <Label>Duration in minutes (1–180)</Label>
+          <TextInput
+            style={s.input}
+            accessibilityLabel="Focus duration in minutes"
+            keyboardType="number-pad"
+            value={minutes}
+            onChangeText={setMinutes}
+          />
+          <Heading>Study chapter</Heading>
+          {chapters
+            .filter((c) => c.status !== "done")
+            .map((c) => (
+              <Button
+                key={c.id}
+                secondary={c.id !== chapterId}
+                title={`${c.title}${c.id === chapterId ? " · Selected" : ""}`}
+                onPress={() => setChapterId(c.id)}
+              />
+            ))}
+        </>
+      )}
+      <Card>
+        <Label>
+          {focus
+            ? chapters.find((c) => c.id === focus.chapterId)?.title
+            : chapters.find((c) => c.id === chapterId)?.title}
+        </Label>
         <Text
-          accessibilityLabel={`${Math.floor(remaining / 60)} minutes ${remaining % 60} seconds`}
           style={{
             color: colors.text,
+            fontSize: 54,
             fontWeight: "800",
-            fontSize: size * 0.22,
+            textAlign: "center",
             fontVariant: ["tabular-nums"],
           }}
+          accessibilityLabel={`${Math.floor(remaining / 60)} minutes ${remaining % 60} seconds`}
         >
           {String(Math.floor(remaining / 60)).padStart(2, "0")}:
           {String(remaining % 60).padStart(2, "0")}
         </Text>
-        <Label>{mode === "work" ? "Focus" : "Breathe"}</Label>
-      </LinearGradient>
-      <View style={[s.row, { justifyContent: "center", gap: 24 }]}>
-        <IconButton
-          name="refresh"
-          label="Reset timer"
-          onPress={() => reset()}
-        />
-        <IconButton
-          primary
-          name={end ? "pause" : "play"}
-          label={end ? "Pause timer" : "Start timer"}
-          onPress={() => {
-            if (end) {
-              setRemaining(Math.max(0, Math.ceil((end - Date.now()) / 1000)));
-              setEnd(null);
-            } else {
-              const seconds = remaining || (mode === "work" ? 1500 : 300);
-              setRemaining(seconds);
-              setEnd(Date.now() + seconds * 1000);
+        <Label>
+          {focus
+            ? `${focus.mode} · ${focus.end === null ? "Paused" : remaining === 0 ? "Complete" : "Running"}`
+            : mode}
+        </Label>
+        {!focus ? (
+          <Button
+            title="Start session"
+            disabled={
+              busy ||
+              !chapterId ||
+              !/^\d+$/.test(minutes) ||
+              +minutes < 1 ||
+              +minutes > 180
             }
-          }}
-        />
-        <IconButton
-          name="play-skip-forward"
-          label="Skip to next mode without recording a session"
-          onPress={() => reset(mode === "work" ? "break" : "work")}
-        />
-      </View>
+            onPress={() => act("start")}
+          />
+        ) : (
+          <>
+            <Button
+              title={
+                remaining === 0
+                  ? "Finish"
+                  : focus.end === null
+                    ? "Resume"
+                    : "Pause"
+              }
+              disabled={busy}
+              onPress={() =>
+                act(
+                  remaining === 0
+                    ? "finish"
+                    : focus.end === null
+                      ? "resume"
+                      : "pause",
+                )
+              }
+            />
+            <Button
+              secondary
+              title="End session"
+              disabled={busy}
+              onPress={() => act("end")}
+            />
+          </>
+        )}
+      </Card>
       {notice ? <Label>{notice}</Label> : null}
-      <Label>STUDYING</Label>
-      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-        {subjects.map((x) => (
-          <Pressable
-            key={x.id}
-            disabled={!!end}
-            accessibilityRole="button"
-            accessibilityState={{ selected: subject === x.id, disabled: !!end }}
-            onPress={() => setSubject(x.id)}
-            style={[
-              s.chip,
-              subject === x.id && {
-                borderColor: x.color,
-                backgroundColor: "#101a2d",
-              },
-              !!end && { opacity: 0.6 },
-            ]}
-          >
-            <Text
-              style={{
-                color: subject === x.id ? x.color : colors.muted,
-                fontWeight: "600",
-              }}
-            >
-              ● {x.name}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
-      <Heading>Recent Sessions</Heading>
+      {celebrated && (
+        <Celebration text="A useful step forward. Take a breath." />
+      )}
+      <Heading>Recent sessions</Heading>
       {sessions.slice(0, 10).map((session) => (
         <Card key={session.id}>
-          <View style={s.row}>
-            <View style={{ flex: 1 }}>
-              <Heading>
-                <Text
-                  style={{
-                    color: subjects.find((x) => x.id === session.subject)
-                      ?.color,
-                  }}
-                >
-                  ●{" "}
-                </Text>
-                {subjects.find((x) => x.id === session.subject)?.name}
-              </Heading>
-              <Label>{session.title}</Label>
-            </View>
-            <Label>
-              {session.minutes}m <Text style={{ color: colors.green }}> ✓</Text>
-            </Label>
-          </View>
+          <Heading>{session.title}</Heading>
+          <Label>
+            {session.minutes} minutes ·{" "}
+            {session.id.startsWith("demo-")
+              ? "Demo session"
+              : new Date(session.finishedAt).toLocaleString()}
+          </Label>
         </Card>
       ))}
     </Page>

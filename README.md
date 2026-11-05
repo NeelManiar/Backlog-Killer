@@ -33,29 +33,38 @@ All four reference images were inspected from `https://raw.githubusercontent.com
 
 Near-black surfaces, indigo cards, purple actions, and subject colors mirror the references. Data is limited to Mathematics, Physics, and Chemistry. Unsupported AI and payment controls are replaced with informational copy. Coverage is a transparent local calculation, not a prediction of exam results.
 
-## Try it
+## BK v0.2: Motivating Study Experience
 
-Open a subject, start a chapter, add it to today’s plan, and mark it complete. Progress updates immediately after saving. Add a chapter using Home’s plus button. Start/pause/reset a focus session; a fully elapsed work interval records 25 minutes. Skipping an interval does not record work. Subject changes are disabled while the timer runs. Countdown uses a deadline to account for background time while the process remains alive; app termination resets the timer.
+- **Subject backlogs:** Torque Cairn (Physics), Mottle Stack (Chemistry), and Lattice Fold (Mathematics) reflect the actual count of unfinished chapters. Finishing a subject offers a quiet, dismissible celebration.
+- **Daily missions:** Enter today's available minutes on Home and request up to three whole-chapter suggestions. Selection prefers high priority, planned, and active chapters, without exceeding availability. Change priority on the subject screen. Complete, skip, or replace individual missions; replacements must fit the budget. Zero availability produces no missions. A new day starts without penalties; request a new plan when ready. Replacing today's suggestions explicitly replaces that day's mission list.
+- **Vellum:** A folded-paper study companion grows from Fold to Fan after three distinct chapter completions and to Canopy after ten. Only completions observed since v0.2 count. Reopening a chapter never removes evolution or grants repeat credit.
+- **Focus:** Choose a chapter and a 1–180 minute work or break session. Pause, resume, or end early. Running deadlines and paused remaining time survive restarts. Returning to the Timer reconciles an expired deadline and saves one session. End records actual elapsed work; breaks do not add study minutes. Timer completion never changes chapter status. No background alarm/notification is promised.
+- **Your comeback story:** Progress shows recorded backlog snapshots, current chapter totals, unique completions and separately recorded focus minutes. Added/reopened chapters can increase backlog. Old completion dates are unknown; history begins at migration. Known `demo-` sessions remain stored but are excluded from the new study-minute total.
+- **Accessibility:** Existing dark surfaces and purple actions are retained. Character drawings have descriptive labels; charts include numeric text. Celebrations are static and optional in Settings, respect reduced motion, and require no timed interaction.
 
-## Structure
+## Architecture and storage
 
-```text
-app/                  Expo Router routes and five-tab navigation
-  (tabs)/             Home, Plan, Timer, Progress, Settings
-  subject/[id].tsx    Chapter status and planning
-  add.tsx             Validated chapter form
-  prediction.tsx      Local coverage estimate
-src/components/ui.tsx Reusable native controls and theme
-src/data/             Seed chapters and progress calculations
-src/state/store.tsx   Serialized persistence and shared state
+Expo Router, shared store, existing plan/add/prediction screens, and serialized save queue remain. Native uses the same `bk.db` / `app_state` row; web uses the same `bk-data` localStorage key. Platform-specific adapters keep SQLite's WASM worker out of web bundles.
+
+An additive `motivation.version = 2` object contains availability, dated missions, persisted focus state, earned chapter IDs, permanent evolution stage, snapshots and celebration preference. Chapter priority is optional (normal when absent). Migration preserves all previous chapters, sessions and unknown top-level fields, records a truthful baseline, and persists it before showing the app. Invalid/unsupported data is not replaced with seed data. Failed writes retain the last saved state and show an error. New installs retain the existing demonstration chapter dataset but no longer seed fictitious focus sessions. Existing demo sessions are preserved.
+
+Pure calculations live in `src/data/motivation.ts`; reusable characters, missions, companion, story and celebrations live in `src/components/motivation.tsx`. Timer orchestration stays in its existing route. No runtime dependencies were added.
+
+## Validation
+
+```sh
+npm ci
+npm run typecheck
+npm test
+EXPO_OFFLINE=1 EXPO_NO_TELEMETRY=1 npm run export:android
+EXPO_OFFLINE=1 EXPO_NO_TELEMETRY=1 npx expo export --platform web
+EXPO_OFFLINE=1 EXPO_NO_TELEMETRY=1 npm run web -- --port 8081
 ```
 
-SQLite stores the full small dataset in one parameterized state row on Android/iOS. Browser preview uses localStorage, avoiding SQLite WASM hosting requirements. First launch seeds realistic Class 12 topics and two explicitly demonstrated sessions. Counts and streaks derive from stored data. Failed writes show an error and do not change visible data. No credentials, authentication, backend, payments, or AI services are included.
+Ten unit tests cover existing metrics plus mission budgets/priorities, migration, permanent progression, boss strength, focus timestamp recovery and history calculations. Use Node 22.18+ or 24. There is no lint script or lint configuration in this repository.
 
-Accessibility includes labeled icon buttons, native text scaling, scrollable layouts, 44+ point targets, semantic headings, and progress values. Layouts use a centered maximum content width on large displays.
+Optional functional test: with the web server running, Python Playwright and Chromium installed, run `python tests/browser-smoke.py` (override `BK_TEST_URL` if needed). It uses isolated browser contexts and synthetic data, covering budget/adjust/skip/complete/reload, focus pause/reload/resume/expiry/exactly-once logging, reduced-motion rendering at 360px, and v1 migration retention. It also verifies subject completion and permanent companion evolution after reopening/reload, and saves `artifacts/v02-progress.png` and `artifacts/v02-home.png`.
 
-## Workspace validation
+Current v0.2 checks and remaining platform limitations are recorded in [CHANGELOG.md](CHANGELOG.md). Android Metro export is bundling validation, not an APK or a device test. Native SQLite and OS background/termination behavior still require Android device/emulator acceptance testing.
 
-In restricted environments where Expo’s remote metadata endpoint is unavailable, `EXPO_OFFLINE=1 EXPO_NO_TELEMETRY=1 npx expo install --check` uses the SDK’s bundled dependency list. Normal local development does not require these flags.
-
-Validation passed in this workspace: TypeScript, three metric tests, SDK bundled dependency version check, Android Metro export, and Expo web startup. Chromium checks at phone width covered adding chapters, plan persistence after reload, chapter completion persistence, timer start/pause/reset/break, completed-session persistence with an accelerated clock, and coverage-screen navigation. No browser runtime errors were reported. Android device installation and native SQLite runtime still require a physical device or emulator check. Preview captures are in `artifacts/`.
+See [asset provenance and originality](docs/ASSET_PROVENANCE.md) for new characters and publication review requirements.

@@ -1,3 +1,4 @@
+import { ComebackStory } from "../../src/components/motivation";
 import { Text, View, Pressable } from "react-native";
 import { router } from "expo-router";
 import {
@@ -54,6 +55,7 @@ export default function Progress() {
           </Card>
         ))}
       </View>
+      <ComebackStory />
       <Heading>Subject Breakdown</Heading>
       {subjects.map((x) => {
         const list = chapters.filter((c) => c.subject === x.id);

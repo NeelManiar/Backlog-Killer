@@ -1,3 +1,4 @@
+import { Companion, Missions } from "../../src/components/motivation";
 import { Text, View, Pressable } from "react-native";
 import { router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
@@ -45,6 +46,8 @@ export default function Home() {
           </View>
           <Label>Let’s fix that backlog today.</Label>
         </LinearGradient>
+        <Missions />
+        <Companion />
         <Heading>Today’s Focus</Heading>
         {focus ? (
           <Pressable

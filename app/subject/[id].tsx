@@ -1,3 +1,4 @@
+import { Boss } from "../../src/components/motivation";
 import { View, Text } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import {
@@ -37,6 +38,7 @@ export default function Subject() {
         {subject.days} days to your target · Tap a chapter’s status to update
         it.
       </Label>
+      <Boss subject={subject.id} />
       {chapters
         .filter((c) => c.subject === id)
         .map((c) => (
@@ -46,6 +48,15 @@ export default function Subject() {
               {c.status.toUpperCase()} · {c.minutes} min
             </Label>
             <View style={{ gap: 8 }}>
+              <Button
+                secondary
+                title={`Priority: ${["Low", "Normal", "High"][c.priority ?? 1]} · change`}
+                onPress={() => {
+                  void update(c.id, {
+                    priority: ((c.priority ?? 1) + 1) % 3,
+                  }).catch(() => {});
+                }}
+              />
               <Button
                 title={
                   c.status === "done"

@@ -10,6 +10,7 @@ export type Chapter = {
   status: "pending" | "active" | "done";
   minutes: number;
   planned: boolean;
+  priority?: number;
 };
 export type Session = {
   id: string;
