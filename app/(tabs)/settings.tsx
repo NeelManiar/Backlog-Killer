@@ -1,5 +1,14 @@
-import { Page, Title, Heading, Label, Card } from "../../src/components/ui";
+import { useStore } from "../../src/state/store";
+import {
+  Page,
+  Title,
+  Heading,
+  Label,
+  Card,
+  Button,
+} from "../../src/components/ui";
 export default function Settings() {
+  const { motivation, configure } = useStore();
   return (
     <Page>
       <Title>Settings</Title>
@@ -15,15 +24,34 @@ export default function Settings() {
         </Label>
       </Card>
       <Card>
+        <Heading>Celebrations</Heading>
+        <Label>
+          Static, optional completion messages. System reduced-motion
+          preferences are respected.
+        </Label>
+        <Button
+          title={
+            motivation.celebrations
+              ? "Celebrations on · turn off"
+              : "Celebrations off · turn on"
+          }
+          onPress={() => {
+            void configure({ celebrations: !motivation.celebrations }).catch(
+              () => {},
+            );
+          }}
+        />
+      </Card>
+      <Card>
         <Heading>Focus routine</Heading>
         <Label>
-          25-minute work sessions · 5-minute breaks. Select a subject before
-          starting the timer.
+          Configurable work and break sessions. Select a chapter before
+          starting. Paused and running timers survive app restarts.
         </Label>
       </Card>
       <Card>
         <Heading>About Backlog Killer</Heading>
-        <Label>Version 1.0.0 · First implementation</Label>
+        <Label>BK v0.2 · Motivating Study Experience</Label>
         <Label>Built for small steps and consistent progress.</Label>
       </Card>
     </Page>
