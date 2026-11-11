@@ -273,3 +273,39 @@ test("native session persistence uses only SecureStore, supports large values an
   assert.equal(values.size, 0);
   assert.equal(await tokenStorage.getItem("test-auth"), null);
 });
+
+test("delayed sync keeps the initiating JWT after another account signs in", async () => {
+  const { createClient } = require("@supabase/supabase-js");
+  const requests = [];
+  let release;
+  const pending = new Promise(resolve => { release = resolve; });
+  const { studyClient } = load("src/auth/client.ts", {
+    process: { env: {
+      EXPO_PUBLIC_SUPABASE_URL: "http://127.0.0.1:54321",
+      EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "sb_publishable_test_fixture_only",
+    } },
+    tokenStorage: {},
+    processLock: async (_name, _timeout, fn) => fn(),
+    createClient: (url, key, options) => !options.accessToken ? {} : createClient(url, key, {
+      ...options,
+      global: { fetch: async (url, options) => {
+        requests.push({ url: String(url), authorization: new Headers(options.headers).get("authorization") });
+        if (requests.length === 1) await pending;
+        return new Response(JSON.stringify(String(url).includes("save_study") ? 1 : null), {
+          status: 200, headers: { "content-type": "application/json" },
+        });
+      } },
+    }),
+  });
+  const sync = load("src/cloud/sync.ts", { studyClient, migrateAccount: accounts.migrateAccount });
+  let currentSession = { access_token: "account-a-test-token" };
+  const initiatingSession = currentSession;
+  const read = sync.readCloud(initiatingSession);
+  currentSession = { access_token: "account-b-test-token" };
+  release();
+  await read;
+  await sync.writeCloud(data(), 0, initiatingSession);
+  assert.equal(requests.length, 2);
+  assert.ok(requests.every(r => r.authorization === "Bearer account-a-test-token"));
+  assert.notEqual(initiatingSession.access_token, currentSession.access_token);
+});

@@ -1,4 +1,4 @@
-import { createClient, processLock } from "@supabase/supabase-js";
+import { createClient, processLock, type Session } from "@supabase/supabase-js";
 import { tokenStorage } from "./tokenStorage";
 const url = process.env.EXPO_PUBLIC_SUPABASE_URL;
 const key = process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
@@ -26,3 +26,18 @@ function configuredClient() {
   }
 }
 export const supabase = configuredClient();
+
+// Pin each sync operation to its initiating session. The shared auth client can
+// switch users while a queued operation or network request is still pending.
+export function studyClient(session: Session) {
+  if (!url || !key) throw Error("Supabase is not configured.");
+  const accessToken = session.access_token;
+  return createClient(url, key, {
+    accessToken: async () => accessToken,
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+    },
+  });
+}

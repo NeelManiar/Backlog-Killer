@@ -284,7 +284,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           save(async (d) => {
             if (!session) throw Error("Sign in to sync.");
             setSyncMessage("Syncing…");
-            const remote = await readCloud();
+            const remote = await readCloud(session);
             const revision = remote?.revision ?? 0;
             const decision = syncDecision(
               d.sync.dirty,
@@ -325,7 +325,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
               return { ...remote!.document, sync: { revision, dirty: false } };
             }
             if (choice === "device" || decision === "push" || !remote) {
-              const nextRevision = await writeCloud(d, revision);
+              const nextRevision = await writeCloud(d, revision, session);
               setConflict(false);
               setSyncMessage("Synced.");
               return { ...d, sync: { revision: nextRevision, dirty: false } };

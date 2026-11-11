@@ -6,7 +6,7 @@ Android-first, offline academic backlog manager built with Expo SDK 58, React Na
 
 This incremental upgrade preserves BK v0.2 and its existing offline data. It adds email-code account screens, secure native session storage, editable six-step academic onboarding, separated School/entrance/Saved sections, account-scoped offline caches, explicit anonymous import, and revision-checked Supabase sync with visible conflict choices.
 
-**Current release gates:** Supabase connection was deferred by the user. Real email delivery, hosted authentication/sync/deletion, and Android device behavior have not been verified. Official curriculum sites are denied by the current proxy; no school or entrance syllabus is claimed verified. Class 12 CBSE PCM 2026–27 currently shows pending-verification notices rather than guessed units. Offline custom chapters and all v0.2 features remain usable.
+**Current release gates:** Supabase configuration is unavailable in the current environment; see [the latest release check](docs/V03_RELEASE_CHECK.md). Real email delivery, hosted authentication/sync/deletion, and Android device behavior have not been verified. Official curriculum sites are denied by the current proxy; no school or entrance syllabus is claimed verified. Class 12 CBSE PCM 2026–27 currently shows pending-verification notices rather than guessed units. Offline custom chapters and all v0.2 features remain usable.
 
 - [Supabase setup, security and privacy review](docs/SUPABASE_SETUP.md)
 - [Curriculum evidence and outstanding verification](docs/CURRICULUM_STATUS.md)

@@ -1,6 +1,6 @@
 # Supabase setup and release gates
 
-This is a local development foundation. No Supabase project is configured or deployed by this change. Never commit credentials. Per the user's instruction, live configuration is deferred.
+This is a local development foundation. No Supabase project is configured or deployed by this change. Never commit credentials. The latest release check could not access a configured project or credentials; see `V03_RELEASE_CHECK.md` for current evidence and blockers.
 
 ## Connect a project
 
