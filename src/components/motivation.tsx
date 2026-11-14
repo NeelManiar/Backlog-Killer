@@ -23,7 +23,9 @@ export function Character({
   kind: string;
   stage?: number;
 }) {
-  const color =
+  const variant = [...kind].reduce((hash,c)=>(Math.imul(hash,31)+c.charCodeAt(0))>>>0,7);
+  const custom = !['physics','chemistry','maths','companion'].includes(kind);
+  const color = custom ? `#${((variant & 0xffffff) | 0x606060).toString(16).padStart(6,'0')}` :
     kind === "physics"
       ? "#3b82f6"
       : kind === "chemistry"
@@ -38,7 +40,7 @@ export function Character({
         ? 5
         : kind === "maths"
           ? 4
-          : stage + 2;
+          : custom ? 3 + variant % 4 : stage + 2;
   return (
     <View
       accessible
@@ -60,9 +62,9 @@ export function Character({
           key={i}
           style={{
             width: kind === "maths" ? 22 : 15 + i * 5,
-            height: 24 + (i % 3) * 14 + stage * 5,
+            height: custom ? 22 + ((variant >>> (i*3)) % 4)*12 : 24 + (i % 3) * 14 + stage * 5,
             backgroundColor: color,
-            borderRadius: kind === "chemistry" ? 20 : 3,
+            borderRadius: kind === "chemistry" ? 20 : custom ? (variant % 3)*6 : 3,
             transform: [
               {
                 rotate: `${kind === "physics" ? i * 20 - 20 : kind === "companion" ? (i % 2 ? 18 : -18) : 0}deg`,
@@ -117,7 +119,7 @@ export function Boss({ subject }: { subject: string }) {
       ? "Torque Cairn"
       : subject === "chemistry"
         ? "Mottle Stack"
-        : "Lattice Fold";
+        : subject === 'maths' ? "Lattice Fold" : `${subject.replaceAll('-', ' ')} Foldkeeper`;
   return (
     <>
       <Card>
@@ -185,6 +187,7 @@ export function Missions() {
   return (
     <Card>
       <Heading>Daily missions</Heading>
+      <Label>Today’s list is shared across study sections. New suggestions replace it; changing your profile keeps it saved.</Label>
       <Label>
         Available study minutes today (0–1440). Suggestions use whole chapter
         estimates and priorities. No missed-day penalties.
@@ -223,6 +226,7 @@ export function Missions() {
       {current &&
         m.missions.map((mission, i) => {
           const chapter = chapters.find((c) => c.id === mission.chapterId);
+          if (!chapter) return null;
           const used = m.missions.reduce(
             (sum, x, j) =>
               sum + (j !== i && x.status !== "skipped" ? x.minutes : 0),
@@ -297,6 +301,7 @@ export function Missions() {
 export function ComebackStory() {
   const { motivation: m, sessions, chapters } = useStore();
   const totals = story(m.history);
+  const earned = m.earned.filter((id) => chapters.some((c) => c.id === id));
   return (
     <Card>
       <Heading>Your comeback story</Heading>
@@ -312,7 +317,7 @@ export function ComebackStory() {
       </Label>
       <Label>
         {chapters.filter((c) => c.status === "done").length} chapters currently
-        complete · {m.earned.length} unique chapters completed since tracking
+        complete · {earned.length} unique chapters completed since tracking
         began.
       </Label>
       <Label>
@@ -334,10 +339,10 @@ export function ComebackStory() {
       ))}
       <Label>
         Milestones:{" "}
-        {m.earned.length >= 3
+        {earned.length >= 3
           ? "3 unique completions reached"
-          : `${m.earned.length}/3 unique completions`}
-        {m.earned.length >= 10 ? " · 10 unique completions reached" : ""}.
+          : `${earned.length}/3 unique completions`}
+        {earned.length >= 10 ? " · 10 unique completions reached" : ""}.
         Evolution stays earned even if chapters reopen.
       </Label>
     </Card>

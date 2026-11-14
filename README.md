@@ -1,6 +1,19 @@
-# Backlog Killer
+# Backlog Killer · v0.3
 
 Android-first, offline academic backlog manager built with Expo SDK 58, React Native, TypeScript, Expo Router, and Expo SQLite.
+
+## v0.3: accounts and personalized curriculum foundation
+
+This incremental upgrade preserves BK v0.2 and its existing offline data. It adds email-code account screens, secure native session storage, editable six-step academic onboarding, separated School/entrance/Saved sections, account-scoped offline caches, explicit anonymous import, and revision-checked Supabase sync with visible conflict choices.
+
+**Current release gates:** Supabase configuration is unavailable in the current environment; see [the latest release check](docs/V03_RELEASE_CHECK.md). Real email delivery, hosted authentication/sync/deletion, and Android device behavior have not been verified. Official curriculum sites are denied by the current proxy; no school or entrance syllabus is claimed verified. Class 12 CBSE PCM 2026–27 currently shows pending-verification notices rather than guessed units. Offline custom chapters and all v0.2 features remain usable.
+
+- [Supabase setup, security and privacy review](docs/SUPABASE_SETUP.md)
+- [Curriculum evidence and outstanding verification](docs/CURRICULUM_STATUS.md)
+- SQL schema/RLS/CAS migration: `supabase/migrations/202611050001_accounts.sql`
+- [Change summary and test evidence](CHANGELOG.md)
+
+No real credentials are included. Configure only the public project URL and publishable key as documented; never bundle a service-role key. New account data starts empty and remains separate from anonymous data until explicit import. Changing academic settings preserves all existing chapters in Saved chapters.
 
 ## Run
 
@@ -48,7 +61,7 @@ Expo Router, shared store, existing plan/add/prediction screens, and serialized 
 
 An additive `motivation.version = 2` object contains availability, dated missions, persisted focus state, earned chapter IDs, permanent evolution stage, snapshots and celebration preference. Chapter priority is optional (normal when absent). Migration preserves all previous chapters, sessions and unknown top-level fields, records a truthful baseline, and persists it before showing the app. Invalid/unsupported data is not replaced with seed data. Failed writes retain the last saved state and show an error. New installs retain the existing demonstration chapter dataset but no longer seed fictitious focus sessions. Existing demo sessions are preserved.
 
-Pure calculations live in `src/data/motivation.ts`; reusable characters, missions, companion, story and celebrations live in `src/components/motivation.tsx`. Timer orchestration stays in its existing route. No runtime dependencies were added.
+Pure calculations live in `src/data/motivation.ts`; reusable characters, missions, companion, story and celebrations live in `src/components/motivation.tsx`. Timer orchestration stays in its existing route. v0.3 adds only Supabase JS and Expo SecureStore; the v0.2 gamification itself needs no additional runtime packages.
 
 ## Validation
 
@@ -61,10 +74,10 @@ EXPO_OFFLINE=1 EXPO_NO_TELEMETRY=1 npx expo export --platform web
 EXPO_OFFLINE=1 EXPO_NO_TELEMETRY=1 npm run web -- --port 8081
 ```
 
-Ten unit tests cover existing metrics plus mission budgets/priorities, migration, permanent progression, boss strength, focus timestamp recovery and history calculations. Use Node 22.18+ or 24. There is no lint script or lint configuration in this repository.
+Nineteen unit tests cover accounts, provider OTP doubles, profile validation, curriculum filtering, storage isolation and conflicts, plus existing metrics, mission budgets/priorities, migration, permanent progression, boss strength, focus timestamp recovery and history calculations. Use Node 22.18+ or 24. There is no lint script or lint configuration in this repository.
 
-Optional functional test: with the web server running, Python Playwright and Chromium installed, run `python tests/browser-smoke.py` (override `BK_TEST_URL` if needed). It uses isolated browser contexts and synthetic data, covering budget/adjust/skip/complete/reload, focus pause/reload/resume/expiry/exactly-once logging, reduced-motion rendering at 360px, and v1 migration retention. It also verifies subject completion and permanent companion evolution after reopening/reload, and saves `artifacts/v02-progress.png` and `artifacts/v02-home.png`.
+Optional functional test: with the web server running, Python Playwright and Chromium installed, run `python tests/browser-smoke.py` (override `BK_TEST_URL` if needed). It uses isolated browser contexts and synthetic data, covering budget/adjust/skip/complete/reload, focus pause/reload/resume/expiry/exactly-once logging, reduced-motion rendering at 360px, and v1 migration retention. `tests/profile-smoke.py` additionally covers PCMB onboarding, optional subjects, multiple goals, custom chapters and preservation. `tests/auth-smoke.py` uses safe provider doubles for account switching and cloud conflicts; see setup instructions. The regression test also verifies subject completion and permanent companion evolution after reopening/reload, and saves `artifacts/v03-progress.png` and `artifacts/v03-home.png`.
 
-Current v0.2 checks and remaining platform limitations are recorded in [CHANGELOG.md](CHANGELOG.md). Android Metro export is bundling validation, not an APK or a device test. Native SQLite and OS background/termination behavior still require Android device/emulator acceptance testing.
+Current checks and remaining platform limitations are recorded in [CHANGELOG.md](CHANGELOG.md). Android Metro export is bundling validation, not an APK or a device test. Native SQLite and OS background/termination behavior still require Android device/emulator acceptance testing.
 
 See [asset provenance and originality](docs/ASSET_PROVENANCE.md) for new characters and publication review requirements.

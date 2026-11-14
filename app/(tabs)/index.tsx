@@ -1,3 +1,4 @@
+import { StudySections } from "../../src/components/studySections";
 import { Companion, Missions } from "../../src/components/motivation";
 import { Text, View, Pressable } from "react-native";
 import { router } from "expo-router";
@@ -14,11 +15,10 @@ import {
   colors,
 } from "../../src/components/ui";
 import { useStore } from "../../src/state/store";
-import { subjects } from "../../src/data/seed";
 import { streak } from "../../src/data/metrics";
 export default function Home() {
-  const { chapters, sessions } = useStore();
-  const focus = chapters.find((c) => c.status === "active");
+  const { chapters, sessions, subjects } = useStore();
+  const focus = chapters.find((c) => c.status === "active") ?? chapters.find(c=>c.status==="pending");
   return (
     <View style={{ flex: 1 }}>
       <Page>
@@ -32,7 +32,7 @@ export default function Home() {
           }}
         >
           <View style={s.row}>
-            <Title>Hey, Aryan</Title>
+            <Title>Your study space</Title>
             <View
               style={[
                 s.chip,
@@ -46,6 +46,7 @@ export default function Home() {
           </View>
           <Label>Let’s fix that backlog today.</Label>
         </LinearGradient>
+        <StudySections />
         <Missions />
         <Companion />
         <Heading>Today’s Focus</Heading>
@@ -62,7 +63,7 @@ export default function Home() {
                   ● {subjects.find((x) => x.id === focus.subject)?.name}
                 </Label>
                 <Label>
-                  ◷ {subjects.find((x) => x.id === focus.subject)?.days}d left
+                  Your next step
                 </Label>
               </View>
               <Heading>{focus.title}</Heading>
@@ -82,8 +83,8 @@ export default function Home() {
           </Pressable>
         ) : (
           <Card>
-            <Heading>All caught up!</Heading>
-            <Label>Add a chapter to start your next goal.</Label>
+            <Heading>{chapters.length ? "All caught up!" : "No study chapters yet"}</Heading>
+            <Label>{chapters.length ? "Add a chapter to start your next goal." : "Check curriculum availability above or add a custom chapter."}</Label>
           </Card>
         )}
         <Heading>
@@ -132,7 +133,7 @@ export default function Home() {
               >
                 <View style={s.row}>
                   <Heading>{subject.name}</Heading>
-                  <Label>▦ {subject.days}d ›</Label>
+                  <Label>Open subject ›</Label>
                 </View>
                 <Label>
                   <Text style={{ color: colors.green }}>{done}</Text> done ·{" "}
@@ -143,7 +144,7 @@ export default function Home() {
                   pending
                 </Label>
                 <Bar
-                  value={Math.round((done / list.length) * 100)}
+                  value={Math.round((done / (list.length || 1)) * 100)}
                   color={subject.color}
                 />
               </Card>

@@ -14,3 +14,7 @@ All v0.2 character artwork is authored in this change as React Native View geome
 Existing navigation icons remain from `@expo/vector-icons` / Ionicons and existing framework assets remain in their packages, governed by their upstream licenses. These are not character assets; no new icon package was added. Existing `artifacts/*.png` are inherited UI captures, not newly licensed character art. This report does not assert ownership or legal clearance of inherited materials.
 
 Before publication: review character names for trademark/name conflicts, visual designs for unintended similarity, inherited BK reference provenance, and the license/notice requirements of bundled fonts, icons and dependencies. Original authorship here is a provenance record, not legal clearance. No legal review has been performed.
+
+## v0.3
+
+No external character artwork was introduced. Vellum and the three v0.2 sculptures remain unchanged. Additional student-selected subjects use original deterministic Foldkeeper variations of the in-project geometry: the subject identifier controls column count, height pattern, corner shape and color. These are code-authored variations under the project ISC license, not downloaded assets. New onboarding/account text and simple selection/progress controls are authored in-project. `v03-*.png` screenshots contain only local synthetic test data. Supabase JS and Expo SecureStore were added for authentication; consult their bundled licenses before publication. The earlier name/design and inherited-asset review gates remain open.

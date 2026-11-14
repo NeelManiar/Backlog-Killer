@@ -17,18 +17,20 @@ import {
   s,
   colors,
 } from "../src/components/ui";
-import { subjects } from "../src/data/seed";
 import { useStore } from "../src/state/store";
 export default function Add() {
+  const { add, subjects } = useStore();
   const params = useLocalSearchParams<{ subject?: string }>();
   const [subject, setSubject] = useState(
-    subjects.some((s) => s.id === params.subject) ? params.subject! : "physics",
+    subjects.some((s) => s.id === params.subject)
+      ? params.subject!
+      : (subjects[0]?.id ?? "custom"),
   );
   const [title, setTitle] = useState("");
   const [minutes, setMinutes] = useState("25");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const { add } = useStore();
+
   async function submit() {
     const duration = Number(minutes);
     if (
@@ -50,6 +52,7 @@ export default function Add() {
         title: title.trim(),
         minutes: duration,
         status: "pending",
+        origin: "custom",
         planned: true,
       });
       router.back();
@@ -71,7 +74,7 @@ export default function Add() {
             label="Cancel adding chapter"
             onPress={() => router.back()}
           />
-          <Title>Add Chapter</Title>
+          <Title>Add Custom Chapter</Title>
         </View>
         <Label>Subject</Label>
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>

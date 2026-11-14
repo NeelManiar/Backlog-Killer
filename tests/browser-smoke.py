@@ -45,7 +45,7 @@ with sync_playwright() as p:
  assert len(data2['sessions'])==1 and data2['motivation']['focus'] is None
  page.goto(BASE + '/progress',wait_until='networkidle')
  page.get_by_text('Your comeback story',exact=True).wait_for()
- page.screenshot(path=str(ROOT / 'artifacts/v02-progress.png'),full_page=True)
+ page.screenshot(path=str(ROOT / 'artifacts/v03-progress.png'),full_page=True)
  assert not errors, errors
  print('PASS: missions budget/skip/completion/reload; companion milestone; focus pause/reload/resume/completion/exactly-once logging; unchanged chapter on timer finish; progress rendering; reduced-motion viewport 360px; no page errors')
  # Actual v1 data migration in a fresh browser context.
@@ -56,7 +56,7 @@ with sync_playwright() as p:
  legacy.goto(BASE,wait_until='networkidle')
  legacy.get_by_text('Daily missions',exact=True).wait_for()
  migrated=json.loads(legacy.evaluate("localStorage.getItem('bk-data')"))
- assert migrated['chapters']==old['chapters'] and migrated['sessions']==old['sessions']
+ assert all(all(migrated['chapters'][i][k]==v for k,v in c.items()) for i,c in enumerate(old['chapters'])) and migrated['sessions']==old['sessions']
  baseline=migrated['motivation']['history'][0]['at']
  legacy.reload(wait_until='networkidle')
  assert json.loads(legacy.evaluate("localStorage.getItem('bk-data')"))['motivation']['history'][0]['at']==baseline
@@ -73,7 +73,7 @@ with sync_playwright() as p:
  legacy.get_by_text('Vellum · Fan',exact=True).wait_for()
  legacy.reload(wait_until='networkidle')
  legacy.get_by_text('Vellum · Fan',exact=True).wait_for()
- legacy.screenshot(path=str(ROOT / 'artifacts/v02-home.png'),full_page=True)
+ legacy.screenshot(path=str(ROOT / 'artifacts/v03-home.png'),full_page=True)
  assert json.loads(legacy.evaluate("localStorage.getItem('bk-data')"))['motivation']['stage']==1
  print('PASS: subject completion celebration, companion evolves after 3 actual UI completions and retains stage after reopen/reload')
  browser.close()

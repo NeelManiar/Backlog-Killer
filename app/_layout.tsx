@@ -1,3 +1,4 @@
+import { AuthProvider, useAuth } from "../src/auth/context";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
@@ -40,12 +41,21 @@ function Routes() {
     </SafeAreaView>
   );
 }
+function AccountStore() {
+  const { session, loading } = useAuth();
+  if (loading) return <ActivityIndicator color={colors.purple} />;
+  return (
+    <StoreProvider key={session?.user.id ?? "anonymous"}>
+      <Routes />
+    </StoreProvider>
+  );
+}
 export default function Layout() {
   return (
     <SafeAreaProvider>
-      <StoreProvider>
-        <Routes />
-      </StoreProvider>
+      <AuthProvider>
+        <AccountStore />
+      </AuthProvider>
     </SafeAreaProvider>
   );
 }

@@ -1,3 +1,20 @@
+# BK v0.3 — Accounts and personalized curriculum foundation
+
+Incremental upgrade preserving v0.2 features and stored student data.
+
+- Supabase email OTP registration/login/verification/resend/logout and recent-sign-in account deletion screens. OTP verification is provider-only; errors do not reveal account existence in the UI.
+- Expo SecureStore native session adapter, tab-scoped web sessions, identity-keyed store remounts and per-account cache namespaces.
+- Editable grade/board/stream/actual-subject/optional-goal/year onboarding, with current academic-year defaults.
+- Strict school versus entrance catalog filters, canonical shared progress keys, explicit custom chapter labels, and preserved legacy chapters under Saved chapters. Scoped history and progress views follow selected content.
+- Owner-only RLS reads, RPC-only revision-checked cloud writes, cascading own-account deletion with a recent-sign-in check, explicit anonymous import and conflict backup/resolution.
+- Supabase setup/config/email template, curriculum status report and privacy/release gates.
+
+Validation: TypeScript and 19 unit tests passed. Browser onboarding/custom-topic/v0.2 regression checks passed. Safe-provider-double browser checks passed registration/login, account switching, explicit import, session reload, cloud push and conflict resolution. Real PostgreSQL 17 tests passed owner isolation, blocked anonymous/direct writes, stale CAS revisions, recent-sign-in deletion and own-data cascade. These SQL tests use a synthetic Auth schema, not hosted Supabase. Final clean Android and web Metro exports passed. No lint script is configured.
+
+Remaining release blockers: connect and validate hosted Supabase and SMTP; review/apply provider expiry/rate/abuse settings; add accessible CAPTCHA challenge UI if required by policy; review web token/CSP security; verify native SecureStore/SQLite/background/device behavior; complete privacy/consent/retention review; fetch and independently verify official curricula. **No official syllabus is currently verified.** The required CBSE Class 12 PCM 2026–27 catalog is pending because official-source access is denied, not replaced with generic topics. See `docs/CURRICULUM_STATUS.md` and `docs/SUPABASE_SETUP.md`.
+
+---
+
 # BK v0.2 — Motivating Study Experience
 
 Incremental upgrade of the existing Expo Router application; original chapter management, daily plan, coverage estimate, theme and offline storage remain.

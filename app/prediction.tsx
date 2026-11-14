@@ -13,10 +13,9 @@ import {
   colors,
 } from "../src/components/ui";
 import { useStore } from "../src/state/store";
-import { subjects } from "../src/data/seed";
 import { coverage } from "../src/data/metrics";
 export default function Prediction() {
-  const { chapters } = useStore();
+  const { chapters, subjects } = useStore();
   const safe = subjects.filter((x) => coverage(chapters, x.id) >= 70).length;
   return (
     <Page>
